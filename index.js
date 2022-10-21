@@ -1,9 +1,38 @@
+const helmet = require('helmet');
+const config = require('config');
+const morgan = require('morgan');
 const Joi = require('joi');
 const express = require('express');
-const { send } = require('express/lib/response');
+const logger = require('./logger')
 const app = express();
 
-app.use(express.json())
+// console.log(`NODE_ENV: ${process.env.NODE_ENV}`); // undefined if not set
+// console.log(`app: ${app.get('env')}`); // gets the current error
+
+// Configuration
+console.log('Application Name' + config.get('name'));
+console.log('Mail Settings' + config.get('mail.host'));
+
+console.log('Mail Password' + config.get('mail.password'));
+
+// do not store password or sensitive data in config - seet custome-environment-variables.json file pointing to 
+// export app_password=1234 in cli
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public')) // use static file
+app.use(helmet());
+if ( app.get('env') === 'development') {
+    app.use(morgan('tiny'));
+    console.log('Morgan is enabledd');
+}
+
+app.use(logger);
+
+// app.use((req, res, next) => {
+//     console.log('Authenticating...');
+//     next();
+// });
 
 const courses = [
     { id: 1, name: 'Course 1'},
